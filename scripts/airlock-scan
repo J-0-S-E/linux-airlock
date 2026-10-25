@@ -1,0 +1,155 @@
+#!/usr/bin/env bash
+# airlock-scan: static red-flag scanner for things you are about to install.
+# It never builds, sources or executes the code it scans.
+#
+#   airlock-scan <dir|file>        scan local files (a cloned repo, a PKGBUILD, a script)
+#   airlock-scan --aur <pkg>       fetch AUR metadata + package repo, then scan it
+#   airlock-scan --github <o/r>    fetch GitHub metadata + shallow clone, then scan it
+#
+# CI files under .github/ are skipped (they run on GitHub, not on your machine), and
+# documentation only reports HIGH findings.
+#
+# Exit code: 0 = no findings, 1 = only MEDIUM/LOW, 2 = at least one HIGH.
+# A clean result is NOT proof of safety. Read the install code yourself.
+
+set -uo pipefail
+
+RED=$'\e[31m'; YEL=$'\e[33m'; DIM=$'\e[2m'; BOLD=$'\e[1m'; RST=$'\e[0m'
+[[ -t 1 ]] || { RED=; YEL=; DIM=; BOLD=; RST=; }
+
+high=0; med=0; low=0
+
+usage() { sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; exit 64; }
+
+# severity | label | extended regex
+PATTERNS=(
+  "HIGH|download piped into a shell|(curl|wget)[^|#]*\|[[:space:]]*(sudo[[:space:]]+)?(ba|z|da|fi)?sh\b"
+  "HIGH|decoded payload piped into a shell or eval|base64[[:space:]]+(-d|--decode).*\|[[:space:]]*(ba|z)?sh|eval[[:space:]]+\"?\\$\((echo|printf|base64|curl|wget)"
+  "HIGH|reads credentials, keys or browser data|\.ssh/|known_hosts|id_(rsa|ed25519)|\.mozilla/firefox|\.config/(google-chrome|chromium|BraveSoftware|discord|vesktop)|Login Data|Cookies\.sqlite|\.aws/credentials|\.docker/config\.json|\.gnupg/|kwallet|\.claude/|\.netrc|\.git-credentials"
+  "HIGH|exfiltration or C2 endpoint|discord(app)?\.com/api/webhooks|api\.telegram\.org/bot|pastebin\.com/raw|\.onion\b|transfer\.sh|ngrok(-free)?\.(io|app)|webhook\.site"
+  "HIGH|binary dropped in hidden or disguised path|/tmp/\.[A-Za-z0-9]|/dev/shm/|/var/tmp/\.[A-Za-z0-9]|\.local/bin/(dbus-daemon|sshd|systemd|kworker)"
+  "HIGH|URL with a raw IP address|https?://[0-9]{1,3}(\.[0-9]{1,3}){3}"
+  "HIGH|long hex-escaped blob|(\\\\x[0-9a-fA-F]{2}){24,}"
+  "MEDIUM|long base64-like string|[A-Za-z0-9+/]{200,}={0,2}"
+  "MEDIUM|base64 decode|base64[[:space:]]+(-d|--decode)|b64decode|atob\("
+  "MEDIUM|inline interpreter one-liner|python3?[[:space:]]+-c[[:space:]]|node[[:space:]]+-e[[:space:]]|perl[[:space:]]+-e[[:space:]]"
+  "MEDIUM|persistence (autostart, shell rc, cron, services)|\.config/autostart|systemctl[[:space:]]+--user[[:space:]]+(enable|start)|crontab|\.bashrc|\.zshrc|/\.profile\b|config\.fish|/etc/systemd/system|/etc/cron|/etc/profile\.d"
+  "MEDIUM|runs something hidden in the background|\bnohup\b|\bdisown\b|\bsetsid\b|>[[:space:]]*/dev/null[[:space:]]+2>&1[[:space:]]*&"
+  "MEDIUM|privilege escalation|\bsudo[[:space:]]|\bpkexec\b|chmod[[:space:]]+[ug]?\+s|chmod[[:space:]]+[2467][0-7]{3}\b|\bsetcap\b"
+  "MEDIUM|package manager pulled in at build/install time|\bnpm[[:space:]]+(i|install|ci)\b|\bnpx[[:space:]]|\bpip3?[[:space:]]+install|\bcargo[[:space:]]+install|\bgo[[:space:]]+install"
+  "MEDIUM|npm lifecycle hook|\"(pre|post)?install\"[[:space:]]*:"
+  "MEDIUM|recursive delete on a variable|rm[[:space:]]+-[a-zA-Z]*r[a-zA-Z]*f?[[:space:]]+\"?\\$"
+  "LOW|downloads something|\b(curl|wget)[[:space:]]|urllib\.request|requests\.get\(|fetch\(['\"]https?:"
+  "LOW|checksum skipped|sha(1|256|512)sums=\([^)]*SKIP|b2sums=\([^)]*SKIP"
+  "LOW|marks a file executable|chmod[[:space:]]+(\+x|[0-7]*[157][0-7]{0,2}\b)"
+)
+
+report() { # sev label file:line:text
+  local sev=$1 label=$2 hit=$3 color
+  case $sev in HIGH) color=$RED; ((high++));; MEDIUM) color=$YEL; ((med++));; *) color=$DIM; ((low++));; esac
+  printf '%s%-6s%s %s\n       %s\n' "$color" "$sev" "$RST" "$label" "${hit:0:220}"
+}
+
+scan_path() {
+  local target=$1
+  echo "${BOLD}== Scanning $target${RST}"
+  for p in "${PATTERNS[@]}"; do
+    sev=${p%%|*}; label=${p#*|}; label=${label%%|*}; regex=${p#*|*|}
+    while IFS= read -r hit; do
+      [[ -z $hit ]] && continue
+      # Docs only matter when they contain something clearly hostile.
+      [[ $sev != HIGH && ${hit%%:*} =~ \.(md|rst|txt)$ ]] && continue
+      report "$sev" "$label" "${hit#"$target"/}"
+    done < <(grep -rnIE --exclude-dir=.git --exclude-dir=.github -e "$regex" "$target" 2>/dev/null | head -n 20)
+  done
+
+  # Binaries and minified code cannot be read; flag them.
+  while IFS= read -r f; do
+    case $(file -b --mime-type "$f") in
+      application/x-executable|application/x-pie-executable|application/x-sharedlib|application/x-mach-binary|application/x-dosexec)
+        report HIGH "prebuilt binary in source tree (cannot be reviewed)" "$f";;
+    esac
+  done < <(find "$target" -path '*/.git' -prune -o -type f -size -50M -print 2>/dev/null)
+  while IFS= read -r f; do
+    report MEDIUM "very long line, likely minified or obfuscated" "$f"
+  done < <(grep -rlIE --exclude-dir=.git '^.{2000,}' "$target" 2>/dev/null | grep -vE '\.(json|svg|lock|min\.css|map)$' | head -n 10)
+}
+
+aur_meta() {
+  local pkg=$1 json
+  json=$(curl -fsS "https://aur.archlinux.org/rpc/v5/info?arg[]=$pkg") || { echo "AUR RPC request failed"; return 1; }
+  [[ $(jq -r '.resultcount' <<<"$json") == 0 ]] && { echo "No AUR package named '$pkg'"; return 1; }
+  echo "${BOLD}== AUR metadata${RST}"
+  jq -r '.results[0] |
+    "Package:     \(.Name) \(.Version)",
+    "Maintainer:  \(.Maintainer // "ORPHANED")",
+    "Submitter:   \(.Submitter // "?")",
+    "Votes:       \(.NumVotes)   Popularity: \(.Popularity)",
+    "Submitted:   \(.FirstSubmitted | todate)",
+    "Modified:    \(.LastModified | todate)",
+    "Upstream:    \(.URL // "-")"' <<<"$json"
+  local first now
+  first=$(jq -r '.results[0].FirstSubmitted' <<<"$json"); now=$(date +%s)
+  (( now - first < 60*60*24*30 )) && report HIGH "AUR package is less than 30 days old" "$pkg"
+  [[ $(jq -r '.results[0].NumVotes' <<<"$json") -lt 5 ]] && report MEDIUM "AUR package has fewer than 5 votes" "$pkg"
+  [[ $(jq -r '.results[0].Maintainer' <<<"$json") == null ]] && report MEDIUM "AUR package is orphaned (anyone can adopt it)" "$pkg"
+  return 0
+}
+
+github_meta() {
+  local repo=$1 json owner
+  json=$(curl -fsS "https://api.github.com/repos/$repo") || { echo "GitHub API request failed"; return 1; }
+  echo "${BOLD}== GitHub metadata${RST}"
+  jq -r '"Repo:        \(.full_name)  fork=\(.fork)  archived=\(.archived)",
+    "Stars:       \(.stargazers_count)   Forks: \(.forks_count)   Open issues: \(.open_issues_count)",
+    "Created:     \(.created_at)   Pushed: \(.pushed_at)",
+    "Description: \(.description // "-")"' <<<"$json"
+  owner=$(curl -fsS "https://api.github.com/users/${repo%%/*}") &&
+    jq -r '"Owner:       \(.login) (\(.type)), account created \(.created_at), public repos \(.public_repos), followers \(.followers)"' <<<"$owner"
+  local stars forks issues
+  stars=$(jq -r .stargazers_count <<<"$json"); forks=$(jq -r .forks_count <<<"$json"); issues=$(jq -r .open_issues_count <<<"$json")
+  (( stars > 200 && forks < stars / 100 && issues == 0 )) && report MEDIUM "many stars but almost no forks or issues (possible fake stars)" "$repo"
+  if [[ -n ${owner:-} ]]; then
+    local created; created=$(date -d "$(jq -r .created_at <<<"$owner")" +%s)
+    (( $(date +%s) - created < 60*60*24*90 )) && report HIGH "owner account is less than 90 days old" "${repo%%/*}"
+  fi
+  return 0
+}
+
+main() {
+  [[ $# -ge 1 ]] || usage
+  local work target
+  case $1 in
+    -h|--help) usage;;
+    --aur)
+      [[ $# -eq 2 ]] || usage
+      work=$(mktemp -d -t airlock.XXXXXX); target="$work/$2"
+      aur_meta "$2" || exit 3
+      GIT_TERMINAL_PROMPT=0 git clone -q --depth 20 "https://aur.archlinux.org/$2.git" "$target" || exit 3
+      echo "${BOLD}== Recent PKGBUILD history (check for maintainer changes)${RST}"
+      git -C "$target" log -n 8 --format='%ad  %an <%ae>  %s' --date=short
+      ;;
+    --github)
+      [[ $# -eq 2 ]] || usage
+      local repo=${2#https://github.com/}; repo=${repo%.git}; repo=${repo%/}
+      work=$(mktemp -d -t airlock.XXXXXX); target="$work/${repo##*/}"
+      github_meta "$repo" || exit 3
+      GIT_TERMINAL_PROMPT=0 git clone -q --depth 1 --no-recurse-submodules "https://github.com/$repo.git" "$target" || exit 3
+      ;;
+    *)
+      target=$1; [[ -e $target ]] || { echo "No such file or directory: $target"; exit 64; }
+      ;;
+  esac
+
+  scan_path "$target"
+
+  echo
+  echo "${BOLD}Summary:${RST} ${RED}$high HIGH${RST}, ${YEL}$med MEDIUM${RST}, $low LOW"
+  [[ -n ${work:-} ]] && echo "Fetched files kept for review in: $target"
+  echo "${DIM}Static patterns only. A clean result is not proof of safety; read every install hook.${RST}"
+  (( high > 0 )) && exit 2
+  (( med + low > 0 )) && exit 1
+  exit 0
+}
+
+main "$@"

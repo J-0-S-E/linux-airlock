@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: passes-known-good-aur
+expected_outcome: |
+  The assistant fetches AUR metadata (maintainer, votes, age) and the PKGBUILD history without building anything, finds no red flags, gives a PASS verdict and asks for confirmation before installing.
