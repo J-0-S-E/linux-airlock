@@ -94,13 +94,13 @@ MIT
 No shortened links, no tracking. Check the address before you click!
 
 1. LWN, malware in the AUR: https://lwn.net/Articles/1077619/
-1. IT-Connect (French), three malicious AUR packages with the Chaos RAT: https://www.it-connect.fr/arch-linux-trois-paquets-aur-malveillants-destines-a-installer-le-malware-chaos-rat/
-1. OSTechnix, using the AUR safely (Atomic Arch): https://ostechnix.com/use-the-aur-safely-arch-linux/
-1. Corgea, the openconnect-sso malware wave: https://corgea.com/research/arch-aur-openconnect-sso-malware-wave-august-2026
-1. Börse Express (German), AUR write access locked: https://www.boerse-express.com/news/articles/arch-linux-aur-schreibzugriffe-nach-paketuebernahmen-gesperrt-934748
-1. BleepingComputer, KDE theme wipes user's files: https://www.bleepingcomputer.com/news/linux/kde-advises-extreme-caution-after-theme-wipes-linux-users-files/
-1. It's FOSS, the KDE Plasma global theme fiasco: https://news.itsfoss.com/kde-plasma-global-theme-fiasco
-1. Cloud Security Alliance (PDF), FakeGit and AgentBaiting: https://labs.cloudsecurityalliance.org/wp-content/uploads/2026/07/CSA_research_note_fakegit-agentbaiting-mcp-supply-chain_20260721-csa-styled.pdf
+2. IT-Connect (French), three malicious AUR packages with the Chaos RAT: https://www.it-connect.fr/arch-linux-trois-paquets-aur-malveillants-destines-a-installer-le-malware-chaos-rat/
+3. OSTechnix, using the AUR safely (Atomic Arch): https://ostechnix.com/use-the-aur-safely-arch-linux/
+4. Corgea, the openconnect-sso malware wave: https://corgea.com/research/arch-aur-openconnect-sso-malware-wave-august-2026
+5. Börse Express (German), AUR write access locked: https://www.boerse-express.com/news/articles/arch-linux-aur-schreibzugriffe-nach-paketuebernahmen-gesperrt-934748
+6. BleepingComputer, KDE theme wipes user's files: https://www.bleepingcomputer.com/news/linux/kde-advises-extreme-caution-after-theme-wipes-linux-users-files/
+7. It's FOSS, the KDE Plasma global theme fiasco: https://news.itsfoss.com/kde-plasma-global-theme-fiasco
+8. Cloud Security Alliance (PDF), FakeGit and AgentBaiting: https://labs.cloudsecurityalliance.org/wp-content/uploads/2026/07/CSA_research_note_fakegit-agentbaiting-mcp-supply-chain_20260721-csa-styled.pdf
 
 More background and the rest of the sources: [`references/sources.md`](references/sources.md)
 
