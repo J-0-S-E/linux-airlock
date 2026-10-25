@@ -85,6 +85,10 @@ Exit code `2` = at least one HIGH, `1` = only MEDIUM/LOW, `0` = nothing found.
 
 Found a new attack pattern or a false positive? Open an issue or a PR. The more real-world patterns in here the better!
 
+## Credits
+
+Made by [J-0-S-E](https://github.com/J-0-S-E), with Claude (Claude Code, Opus 5.5) as co-worker. Claude did the research, wrote the scanner and ran the tests, I steered and made the calls. Fitting, since the whole point is keeping AI agents like Claude from installing sketchy stuff!
+
 ## License
 
 MIT
