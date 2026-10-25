@@ -77,7 +77,8 @@ still apply.
 
 **Themes, widgets and dotfiles.** A plain colour, icon or font pack without scripts is low
 risk. Global themes, desktop widgets and dotfiles with an `install.sh` must be read in full.
-In 2024 a global theme in the KDE Store ran `rm -rf` on users' files.
+In 2024 a global theme in the KDE Store wiped a user's files with `rm -rf` through a
+shell parsing bug. Not malware, but proof that themes run arbitrary code.
 
 **AI agent skills, plugins and MCP servers.** Read `SKILL.md`, every hook, every script and
 any `.mcp.json`. A skill runs with the user's permissions and can make the agent read `.env`
