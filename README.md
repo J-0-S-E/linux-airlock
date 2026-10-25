@@ -10,11 +10,13 @@ What actually gets you is **stuff you install yourself**. An AUR package, a cool
 
 And no, this isn't hypothetical:
 
-- **July 2025:** Three `-bin` browser packages on the AUR shipped with a RAT
-- **Spring 2026:** The "Atomic Arch" campaign took over orphaned AUR packages and had the PKGBUILD pull in a malicious npm package that stole cookies, SSH keys, tokens, all of it
-- **August 2026:** Another wave hit 89+ AUR packages (`openconnect-sso` and friends), and Arch had to lock pushes to the AUR completely
-- **2024:** A global theme in the KDE Store ran `rm -rf` on people's files
-- **2026:** Thousands of fake GitHub repos with READMEs written to trick AI agents (yes, like Claude!?) into running the install script without looking ("AgentBaiting")
+- **July 2025:** Three `-bin` browser packages on the AUR shipped with the Chaos RAT ([LWN](https://lwn.net/Articles/1077619/), [IT-Connect](https://www.it-connect.fr/arch-linux-trois-paquets-aur-malveillants-destines-a-installer-le-malware-chaos-rat/))
+- **Spring 2026:** The "Atomic Arch" campaign took over orphaned AUR packages and had the PKGBUILD pull in a malicious npm package that stole cookies, SSH keys, tokens, all of it ([OSTechnix](https://ostechnix.com/use-the-aur-safely-arch-linux/), [LWN](https://lwn.net/Articles/1077619/))
+- **August 2026:** Another wave hit 89+ AUR packages (`openconnect-sso` and friends), and Arch had to lock pushes to the AUR completely ([Corgea](https://corgea.com/research/arch-aur-openconnect-sso-malware-wave-august-2026), [Börse Express](https://www.boerse-express.com/news/articles/arch-linux-aur-schreibzugriffe-nach-paketuebernahmen-gesperrt-934748), German)
+- **March 2024:** A global theme in the KDE Store ran `rm -rf` and wiped a user's files. It was a bug, not malware, but it proved the point: KDE themes and widgets can run any code they want ([BleepingComputer](https://www.bleepingcomputer.com/news/linux/kde-advises-extreme-caution-after-theme-wipes-linux-users-files/), [It's FOSS](https://news.itsfoss.com/kde-plasma-global-theme-fiasco))
+- **2026:** Thousands of fake GitHub repos with READMEs written to trick AI agents (yes, like Claude!?) into running the install script without looking, aka "AgentBaiting" ([Cloud Security Alliance](https://labs.cloudsecurityalliance.org/wp-content/uploads/2026/07/CSA_research_note_fakegit-agentbaiting-mcp-supply-chain_20260721-csa-styled.pdf))
+
+Some of these are news sites and security blogs, not Arch's own announcements, and they don't all agree on the exact numbers. The full list with notes is in [`references/sources.md`](references/sources.md).
 
 I also wanted something like this for Claude Code and couldn't find anything that covered AUR + themes + dotfiles. So here it is!
 

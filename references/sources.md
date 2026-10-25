@@ -21,6 +21,11 @@ package counts. Check Arch Linux's own news posts before relying on specifics.
 - [SecurityWeek: manipulated GitHub search](https://www.securityweek.com/threat-actors-manipulate-github-search-to-deliver-malware/): fake stars and automated commits
 - [Rushter: the rise of malicious repositories on GitHub](https://rushter.com/blog/github-malware/)
 
+## Themes
+
+- [BleepingComputer: KDE advises extreme caution after theme wipes user's files (March 2024)](https://www.bleepingcomputer.com/news/linux/kde-advises-extreme-caution-after-theme-wipes-linux-users-files/): the "Grey Layout" global theme ran `rm -rf` through a shell parsing bug
+- [It's FOSS: the KDE Plasma global theme fiasco](https://news.itsfoss.com/kde-plasma-global-theme-fiasco)
+
 ## General
 
 - TuxCare, *Top Ten Cybersecurity Misconfigurations* (playbook, PDF from tuxcare.com/downloadables): allowlisting over blocklisting, sandboxing untrusted code in VMs
