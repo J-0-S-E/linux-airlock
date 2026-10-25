@@ -10,13 +10,13 @@ What actually gets you is **stuff you install yourself**. An AUR package, a cool
 
 And no, this isn't hypothetical:
 
-- **July 2025:** Three `-bin` browser packages on the AUR shipped with the Chaos RAT ([LWN](https://lwn.net/Articles/1077619/), [IT-Connect](https://www.it-connect.fr/arch-linux-trois-paquets-aur-malveillants-destines-a-installer-le-malware-chaos-rat/))
-- **Spring 2026:** The "Atomic Arch" campaign took over orphaned AUR packages and had the PKGBUILD pull in a malicious npm package that stole cookies, SSH keys, tokens, all of it ([OSTechnix](https://ostechnix.com/use-the-aur-safely-arch-linux/), [LWN](https://lwn.net/Articles/1077619/))
-- **August 2026:** Another wave hit 89+ AUR packages (`openconnect-sso` and friends), and Arch had to lock pushes to the AUR completely ([Corgea](https://corgea.com/research/arch-aur-openconnect-sso-malware-wave-august-2026), [Börse Express](https://www.boerse-express.com/news/articles/arch-linux-aur-schreibzugriffe-nach-paketuebernahmen-gesperrt-934748), German)
-- **March 2024:** A global theme in the KDE Store ran `rm -rf` and wiped a user's files. It was a bug, not malware, but it proved the point: KDE themes and widgets can run any code they want ([BleepingComputer](https://www.bleepingcomputer.com/news/linux/kde-advises-extreme-caution-after-theme-wipes-linux-users-files/), [It's FOSS](https://news.itsfoss.com/kde-plasma-global-theme-fiasco))
-- **2026:** Thousands of fake GitHub repos with READMEs written to trick AI agents (yes, like Claude!?) into running the install script without looking, aka "AgentBaiting" ([Cloud Security Alliance](https://labs.cloudsecurityalliance.org/wp-content/uploads/2026/07/CSA_research_note_fakegit-agentbaiting-mcp-supply-chain_20260721-csa-styled.pdf))
+- **July 2025:** Three `-bin` browser packages on the AUR shipped with the Chaos RAT [^1] [^2]
+- **Spring 2026:** The "Atomic Arch" campaign took over orphaned AUR packages and had the PKGBUILD pull in a malicious npm package that stole cookies, SSH keys, tokens, all of it [^3] [^1]
+- **August 2026:** Another wave hit 89+ AUR packages (`openconnect-sso` and friends), and Arch had to lock pushes to the AUR completely [^4] [^5]
+- **March 2024:** A global theme in the KDE Store ran `rm -rf` and wiped a user's files. It was a bug, not malware, but it proved the point: KDE themes and widgets can run any code they want [^6] [^7]
+- **2026:** Thousands of fake GitHub repos with READMEs written to trick AI agents (yes, like Claude!?) into running the install script without looking, aka "AgentBaiting" [^8]
 
-Some of these are news sites and security blogs, not Arch's own announcements, and they don't all agree on the exact numbers. The full list with notes is in [`references/sources.md`](references/sources.md).
+The numbers jump down to the [Sources](#sources) at the bottom, where you can see the full link before you click anything. Some of them are news sites and security blogs, not Arch's own announcements, and they don't all agree on the exact numbers.
 
 I also wanted something like this for Claude Code and couldn't find anything that covered AUR + themes + dotfiles. So here it is!
 
@@ -88,3 +88,19 @@ Found a new attack pattern or a false positive? Open an issue or a PR. The more 
 ## License
 
 MIT
+
+## Sources
+
+No shortened links, no tracking. Check the address before you click!
+
+[^1]: LWN, malware in the AUR: https://lwn.net/Articles/1077619/
+[^2]: IT-Connect (French), three malicious AUR packages with the Chaos RAT: https://www.it-connect.fr/arch-linux-trois-paquets-aur-malveillants-destines-a-installer-le-malware-chaos-rat/
+[^3]: OSTechnix, using the AUR safely (Atomic Arch): https://ostechnix.com/use-the-aur-safely-arch-linux/
+[^4]: Corgea, the openconnect-sso malware wave: https://corgea.com/research/arch-aur-openconnect-sso-malware-wave-august-2026
+[^5]: Börse Express (German), AUR write access locked: https://www.boerse-express.com/news/articles/arch-linux-aur-schreibzugriffe-nach-paketuebernahmen-gesperrt-934748
+[^6]: BleepingComputer, KDE theme wipes user's files: https://www.bleepingcomputer.com/news/linux/kde-advises-extreme-caution-after-theme-wipes-linux-users-files/
+[^7]: It's FOSS, the KDE Plasma global theme fiasco: https://news.itsfoss.com/kde-plasma-global-theme-fiasco
+[^8]: Cloud Security Alliance (PDF), FakeGit and AgentBaiting: https://labs.cloudsecurityalliance.org/wp-content/uploads/2026/07/CSA_research_note_fakegit-agentbaiting-mcp-supply-chain_20260721-csa-styled.pdf
+
+More background and the rest of the sources: [`references/sources.md`](references/sources.md)
+
